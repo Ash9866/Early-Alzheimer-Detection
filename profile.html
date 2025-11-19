@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+{% block title %}Profile - Alzheimer Detection{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">User Profile</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <!-- Profile Card -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-circle me-2"></i>Profile Information
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                         style="width: 100px; height: 100px;">
+                        <i class="fas fa-user fa-3x text-white"></i>
+                    </div>
+                </div>
+                
+                <h4>{{ current_user.username }}</h4>
+                <p class="text-muted">{{ current_user.email }}</p>
+                
+                <div class="d-grid gap-2">
+                    <span class="badge bg-{{ 'success' if current_user.is_admin() else 'info' }} fs-6">
+                        <i class="fas fa-{{ 'shield-alt' if current_user.is_admin() else 'user' }} me-1"></i>
+                        {{ 'Administrator' if current_user.is_admin() else 'Patient User' }}
+                    </span>
+                </div>
+                
+                <hr>
+                
+                <div class="text-start small">
+                    <div class="mb-2">
+                        <i class="fas fa-calendar-alt me-2 text-muted"></i>
+                        <strong>Member since:</strong> {{ current_user.created_at.strftime('%B %d, %Y') }}
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-clock me-2 text-muted"></i>
+                        <strong>Last login:</strong> Recently
+                    </div>
+                    <div>
+                        <i class="fas fa-id-card me-2 text-muted"></i>
+                        <strong>User ID:</strong> #{{ current_user.id }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Quick Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            Patients
+                        </span>
+                        <span class="badge bg-primary rounded-pill">
+                            {{ current_user.patients|length }}
+                        </span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-file-medical me-2 text-success"></i>
+                            Total Scans
+                        </span>
+                        <span class="badge bg-success rounded-pill">
+                            {{ current_user.scans|length }}
+                        </span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-check-circle me-2 text-info"></i>
+                            Processed
+                        </span>
+                        <span class="badge bg-info rounded-pill">
+                            {{ current_user.scans|selectattr('processed')|list|length }}
+                        </span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-clock me-2 text-warning"></i>
+                            Pending
+                        </span>
+                        <span class="badge bg-warning rounded-pill">
+                            {{ current_user.scans|rejectattr('processed')|list|length }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- Account Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cogs me-2"></i>Account Settings
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" 
+                                data-bs-target="#profile" type="button" role="tab">
+                            <i class="fas fa-user-edit me-1"></i>Edit Profile
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="security-tab" data-bs-toggle="tab" 
+                                data-bs-target="#security" type="button" role="tab">
+                            <i class="fas fa-shield-alt me-1"></i>Security
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="preferences-tab" data-bs-toggle="tab" 
+                                data-bs-target="#preferences" type="button" role="tab">
+                            <i class="fas fa-sliders-h me-1"></i>Preferences
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content p-3" id="profileTabsContent">
+                    <!-- Edit Profile Tab -->
+                    <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                        <form>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" 
+                                               value="{{ current_user.username }}" readonly>
+                                        <div class="form-text">Username cannot be changed</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" 
+                                               value="{{ current_user.email }}">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">Display Name</label>
+                                <input type="text" class="form-control" id="fullName" 
+                                       placeholder="Enter your display name">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" rows="3" 
+                                          placeholder="Tell us about yourself..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Update Profile
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Security Tab -->
+                    <div class="tab-pane fade" id="security" role="tabpanel">
+                        <form>
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword" 
+                                       placeholder="Enter current password">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="newPassword" class="form-label">New Password</label>
+                                        <input type="password" class="form-control" id="newPassword" 
+                                               placeholder="Enter new password">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" id="confirmPassword" 
+                                               placeholder="Confirm new password">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading">
+                                    <i class="fas fa-info-circle me-1"></i>Password Requirements
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li>Minimum 8 characters</li>
+                                    <li>At least one uppercase letter</li>
+                                    <li>At least one number</li>
+                                    <li>At least one special character</li>
+                                </ul>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key me-1"></i>Change Password
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Preferences Tab -->
+                    <div class="tab-pane fade" id="preferences" role="tabpanel">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">Email Notifications</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="notifyScans" checked>
+                                    <label class="form-check-label" for="notifyScans">
+                                        Notify when scan analysis is complete
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="notifyUpdates" checked>
+                                    <label class="form-check-label" for="notifyUpdates">
+                                        Notify about system updates and new features
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="notifyMonthly">
+                                    <label class="form-check-label" for="notifyMonthly">
+                                        Send monthly activity reports
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="language" class="form-label">Language</label>
+                                <select class="form-select" id="language">
+                                    <option selected>English</option>
+                                    <option>Spanish</option>
+                                    <option>French</option>
+                                    <option>German</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="timezone" class="form-label">Timezone</label>
+                                <select class="form-select" id="timezone">
+                                    <option selected>UTC-05:00 Eastern Time</option>
+                                    <option>UTC-06:00 Central Time</option>
+                                    <option>UTC-07:00 Mountain Time</option>
+                                    <option>UTC-08:00 Pacific Time</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Results Display</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="resultsDisplay" id="detailedResults" checked>
+                                    <label class="form-check-label" for="detailedResults">
+                                        Show detailed analysis results
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="resultsDisplay" id="simpleResults">
+                                    <label class="form-check-label" for="simpleResults">
+                                        Show simplified results summary
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Save Preferences
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if current_user.scans %}
+                <div class="list-group list-group-flush">
+                    {% for scan in current_user.scans[-5:]|reverse %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                <i class="fas fa-upload me-2 text-primary"></i>
+                                MRI Scan Uploaded
+                            </h6>
+                            <small class="text-muted">{{ scan.upload_date.strftime('%m/%d/%Y') }}</small>
+                        </div>
+                        <p class="mb-1">File: {{ scan.original_filename }}</p>
+                        <small class="text-muted">
+                            Patient: {{ scan.patient.full_name }} • 
+                            Status: 
+                            <span class="badge bg-{{ 'success' if scan.processed else 'warning' }}">
+                                {{ 'Processed' if scan.processed else 'Pending' }}
+                            </span>
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No recent activity</p>
+                    <a href="{{ url_for('main.upload_mri') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-upload me-1"></i>Upload Your First MRI
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab functionality
+    const triggerTabList = [].slice.call(document.querySelectorAll('#profileTabs button'));
+    triggerTabList.forEach(function (triggerEl) {
+        const tabTrigger = new bootstrap.Tab(triggerEl);
+        triggerEl.addEventListener('click', function (event) {
+            event.preventDefault();
+            tabTrigger.show();
+        });
+    });
+
+    // Password validation
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    
+    function validatePassword() {
+        if (newPassword.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Passwords do not match');
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+    
+    newPassword.addEventListener('change', validatePassword);
+    confirmPassword.addEventListener('keyup', validatePassword);
+});
+</script>
+{% endblock %}

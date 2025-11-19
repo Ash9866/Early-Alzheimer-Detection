@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron bg-light rounded p-5 mb-4">
+    <div class="container">
+        <h1 class="display-4">Alzheimer's Detection System</h1>
+        <p class="lead">Early detection and classification of Alzheimer's disease using advanced deep learning technology.</p>
+        <hr class="my-4">
+        <p>Upload MRI scans and get instant analysis with our MobileNetV3-based AI model.</p>
+        {% if not current_user.is_authenticated %}
+        <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}">Get Started</a>
+        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.login') }}">Login</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">AI-Powered Analysis</h5>
+                <p class="card-text">Advanced MobileNetV3 architecture for accurate classification.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Secure & Private</h5>
+                <p class="card-text">Your data is protected with enterprise-grade security.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Detailed Reports</h5>
+                <p class="card-text">Comprehensive analysis with confidence scores and probabilities.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

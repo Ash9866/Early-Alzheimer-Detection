@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Alzheimer Detection{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+</div>
+
+{% if current_user.is_admin() %}
+<!-- Admin Dashboard -->
+<div class="row">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_patients }}</h4>
+                        <p class="card-text">Total Patients</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_scans }}</h4>
+                        <p class="card-text">Total Scans</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-file-medical fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Patient Dashboard -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Welcome, {{ current_user.username }}</h5>
+            </div>
+            <div class="card-body">
+                <p>Welcome to your Alzheimer's Detection System dashboard. You can:</p>
+                <ul>
+                    <li>Upload new MRI scans for analysis</li>
+                    <li>View your patient records</li>
+                    <li>Check previous analysis results</li>
+                </ul>
+                <a href="{{ url_for('main.upload_mri') }}" class="btn btn-primary">Upload New MRI</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Scans -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Scans</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_scans %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Patient</th>
+                                <th>Upload Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for scan in recent_scans %}
+                            <tr>
+                                <td>{{ scan.original_filename }}</td>
+                                <td>{{ scan.patient.full_name }}</td>
+                                <td>{{ scan.upload_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if scan.processed else 'warning' }}">
+                                        {{ 'Processed' if scan.processed else 'Pending' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if scan.result %}
+                                    <a href="{{ url_for('main.view_result', result_id=scan.result.id) }}" class="btn btn-sm btn-primary">View Result</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No scans found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

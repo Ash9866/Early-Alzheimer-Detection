@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Add Patient - Alzheimer Detection{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Add New Patient</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('main.patients') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Patients
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Patient Registration Form
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.full_name.label(class="form-label") }}
+                                {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else ""), 
+                                                placeholder="Enter patient's full name") }}
+                                {% for error in form.full_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text">Patient's complete legal name</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                {{ form.age.label(class="form-label") }}
+                                {{ form.age(class="form-control" + (" is-invalid" if form.age.errors else ""), 
+                                          placeholder="Age", type="number", min="1", max="120") }}
+                                {% for error in form.age.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                {{ form.gender.label(class="form-label") }}
+                                {{ form.gender(class="form-select" + (" is-invalid" if form.gender.errors else "")) }}
+                                {% for error in form.gender.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.contact_info.label(class="form-label") }}
+                        {{ form.contact_info(class="form-control" + (" is-invalid" if form.contact_info.errors else ""), 
+                                           placeholder="Phone number or email address") }}
+                        {% for error in form.contact_info.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">Primary contact information for the patient</div>
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.medical_history.label(class="form-label") }}
+                        {{ form.medical_history(class="form-control" + (" is-invalid" if form.medical_history.errors else ""), 
+                                              rows="5", placeholder="Enter relevant medical history, previous conditions, medications, etc.") }}
+                        {% for error in form.medical_history.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">
+                            Include any relevant medical information that might help in diagnosis
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('main.patients') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Information Card -->
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Important Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Data Privacy</h6>
+                        <p class="small text-muted">
+                            <i class="fas fa-shield-alt me-2 text-primary"></i>
+                            All patient data is encrypted and stored securely in compliance with healthcare privacy regulations.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Required Fields</h6>
+                        <p class="small text-muted">
+                            <i class="fas fa-asterisk me-2 text-danger"></i>
+                            Fields marked with an asterisk (*) are required. Complete information helps in accurate analysis.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-lightbulb me-1"></i>Best Practices
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>Use the patient's complete legal name for accurate record keeping</li>
+                        <li>Provide up-to-date contact information for follow-up communications</li>
+                        <li>Include relevant family medical history when possible</li>
+                        <li>Note any previous neurological evaluations or treatments</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Age input validation
+    const ageInput = document.getElementById('age');
+    ageInput.addEventListener('input', function() {
+        const age = parseInt(this.value);
+        if (age < 1 || age > 120) {
+            this.setCustomValidity('Please enter a valid age between 1 and 120');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Form submission handling
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function() {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding Patient...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

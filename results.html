@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}Analysis Results - Alzheimer Detection{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Analysis Results</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('main.upload_mri') }}" class="btn btn-primary me-2">
+            <i class="fas fa-upload me-1"></i>New Analysis
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Results Card -->
+        <div class="card mb-4">
+            <div class="card-header 
+                {% if result.prediction_class == 'non_demented' %}bg-success
+                {% elif result.prediction_class == 'very_mild_demented' %}bg-warning
+                {% else %}bg-danger{% endif %} text-white">
+                <h5 class="card-title text-white mb-0">
+                    <i class="fas fa-diagnoses me-2"></i>Analysis Result
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 text-center">
+                        <!-- Confidence Circle -->
+                        <div class="mb-4">
+                            {% set confidence_percent = (result.confidence * 100)|round(1) %}
+                            <div class="position-relative d-inline-block">
+                                <div class="rounded-circle border border-5 
+                                    {% if confidence_percent >= 80 %}border-success
+                                    {% elif confidence_percent >= 60 %}border-warning
+                                    {% else %}border-danger{% endif %}" 
+                                    style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center;">
+                                    <div class="text-center">
+                                        <span class="h3 fw-bold d-block">{{ confidence_percent }}%</span>
+                                        <small class="text-muted">Confidence</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h4 class="mb-3">Diagnosis: 
+                            <span class="badge 
+                                {% if result.prediction_class == 'non_demented' %}bg-success
+                                {% elif result.prediction_class == 'very_mild_demented' %}bg-warning
+                                {% else %}bg-danger{% endif %} fs-6">
+                                {{ result.prediction_class.replace('_', ' ').title() }}
+                            </span>
+                        </h4>
+                        
+                        <div class="mb-3">
+                            <strong>Patient:</strong> {{ patient.full_name if patient else 'Unknown' }}<br>
+                            <strong>Age:</strong> {{ patient.age if patient else 'N/A' }}<br>
+                            <strong>Gender:</strong> {{ patient.gender.title() if patient else 'N/A' }}<br>
+                            <strong>Analysis Date:</strong> {{ result.created_at.strftime('%B %d, %Y at %H:%M') }}
+                        </div>
+
+                        <div class="alert 
+                            {% if result.prediction_class == 'non_demented' %}alert-success
+                            {% elif result.prediction_class == 'very_mild_demented' %}alert-warning
+                            {% else %}alert-danger{% endif %}">
+                            <h6 class="alert-heading">
+                                <i class="fas 
+                                    {% if result.prediction_class == 'non_demented' %}fa-check-circle
+                                    {% elif result.prediction_class == 'very_mild_demented' %}fa-exclamation-triangle
+                                    {% else %}fa-exclamation-circle{% endif %} me-1"></i>
+                                {% if result.prediction_class == 'non_demented' %}
+                                    No Significant Cognitive Impairment Detected
+                                {% elif result.prediction_class == 'very_mild_demented' %}
+                                    Very Mild Dementia Detected
+                                {% elif result.prediction_class == 'mild_demented' %}
+                                    Mild Dementia Detected
+                                {% else %}
+                                    Moderate Dementia Detected
+                                {% endif %}
+                            </h6>
+                            <p class="mb-0 small">
+                                {% if result.prediction_class == 'non_demented' %}
+                                    The MRI analysis shows no significant signs of Alzheimer's disease or dementia.
+                                {% elif result.prediction_class == 'very_mild_demented' %}
+                                    Early signs of cognitive decline detected. Regular monitoring recommended.
+                                {% elif result.prediction_class == 'mild_demented' %}
+                                    Clear indications of dementia present. Medical consultation advised.
+                                {% else %}
+                                    Significant dementia detected. Immediate medical attention recommended.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Probability Distribution -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Probability Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                {% set probs = result.get_probabilities() %}
+                {% if probs %}
+                    <div class="row">
+                        {% for class_name, prob in probs.items() %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-capitalize">{{ class_name.replace('_', ' ') }}</span>
+                                <strong>{{ (prob * 100)|round(1) }}%</strong>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar 
+                                    {% if class_name == 'non_demented' %}bg-success
+                                    {% elif class_name == 'very_mild_demented' %}bg-warning
+                                    {% elif class_name == 'mild_demented' %}bg-orange
+                                    {% else %}bg-danger{% endif %}" 
+                                    data-width="{{ (prob * 100)|round(1) }}">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Probability data not available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Patient Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user me-2"></i>Patient Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Full Name:</strong><br>
+                    {{ patient.full_name if patient else 'Unknown' }}
+                </div>
+                <div class="mb-3">
+                    <strong>Age & Gender:</strong><br>
+                    {{ patient.age if patient else 'N/A' }} years, {{ patient.gender.title() if patient else 'N/A' }}
+                </div>
+                {% if patient and patient.contact_info %}
+                <div class="mb-3">
+                    <strong>Contact:</strong><br>
+                    {{ patient.contact_info }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Scan Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-file-image me-2"></i>Scan Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    {% if scan and scan.image_path %}
+                    <img src="{{ url_for('static', filename='uploads/' + scan.image_path) }}" 
+                         alt="MRI Scan" class="img-fluid rounded border" style="max-height: 200px; max-width: 100%;">
+                    {% else %}
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 150px;">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="small">
+                    <strong>Filename:</strong> {{ scan.original_filename if scan else 'Unknown' }}<br>
+                    <strong>Uploaded:</strong> {{ scan.upload_date.strftime('%B %d, %Y') if scan else 'Unknown' }}<br>
+                    <strong>Analysis ID:</strong> #{{ result.id }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-stethoscope me-2"></i>Recommendations
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small">
+                    {% if result.prediction_class == 'non_demented' %}
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Continue regular cognitive exercises</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Annual follow-up recommended</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Maintain healthy lifestyle</li>
+                    {% elif result.prediction_class == 'very_mild_demented' %}
+                    <li class="mb-2"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Consult neurologist</li>
+                    <li class="mb-2"><i class="fas fa-exclamation-triangle text-warning me-2"></i>6-month follow-up recommended</li>
+                    <li class="mb-2"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Cognitive therapy suggested</li>
+                    {% else %}
+                    <li class="mb-2"><i class="fas fa-exclamation-circle text-danger me-2"></i>Immediate medical consultation</li>
+                    <li class="mb-2"><i class="fas fa-exclamation-circle text-danger me-2"></i>Comprehensive evaluation needed</li>
+                    <li class="mb-2"><i class="fas fa-exclamation-circle text-danger me-2"></i>Treatment plan development</li>
+                    {% endif %}
+                </ul>
+                
+                <div class="alert alert-info mt-3">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        This analysis is AI-assisted and should be reviewed by a qualified medical professional.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <a href="{{ url_for('main.upload_mri') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-upload me-1"></i>New Analysis
+                </a>
+                <a href="{{ url_for('main.patients') }}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-users me-1"></i>View Patients
+                </a>
+                <button onclick="window.print()" class="btn btn-outline-primary">
+                    <i class="fas fa-print me-1"></i>Print Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar widths after page load
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.getAttribute('data-width');
+        if (width) {
+            bar.style.width = width + '%';
+        }
+    });
+});
+</script>
+{% endblock %}
