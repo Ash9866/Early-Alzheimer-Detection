@@ -1,0 +1,32 @@
+# Web Framework
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Flask-WTF
+Flask-Migrate
+Flask-Mail
+
+# Database
+psycopg2-binary
+SQLAlchemy
+
+# Deep Learning
+tensorflow
+keras
+opencv-python
+numpy
+pandas
+scikit-learn
+Pillow
+
+# Utilities
+matplotlib
+seaborn
+plotly
+Werkzeug
+WTForms
+email-validator
+python-dotenv
+
+# Additional
+gunicorn
